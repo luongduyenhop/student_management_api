@@ -5,9 +5,10 @@ import com.hop.studentmanagement.dto.request.UpdateStudentRequest;
 import com.hop.studentmanagement.entity.ClassRoom;
 import com.hop.studentmanagement.entity.Student;
 import com.hop.studentmanagement.exception.DuplicateStudentCodeException;
-import com.hop.studentmanagement.exception.StudentNotFoundException;
+import com.hop.studentmanagement.exception.ResourceNotFoundException;
 import com.hop.studentmanagement.repository.ClassRoomRepository;
 import com.hop.studentmanagement.repository.StudentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class StudentService {
     public Student getStudentByID(Long id){
 
         return studentRepository.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException("Không tìm thấy học sinh"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học sinh","id",id));
 
     }
 
@@ -40,9 +41,7 @@ public class StudentService {
         if(studentRepository.existsByStudentCode(request.getStudentCode())){
             throw new DuplicateStudentCodeException("Mã sinh viên này đã tồn tại");
         }
-        ClassRoom classRoom = classRoomRepository.findById(request.getClassRoomId()).orElseThrow(
-                () -> new RuntimeException("Khong tim thay lop nay")
-        );
+        ClassRoom classRoom = getClassRoomOrThrow(request.getClassRoomId());
 
         Student savedStudent = new Student();
         savedStudent.setStudentCode(request.getStudentCode());
@@ -57,16 +56,16 @@ public class StudentService {
 
     }
 
+    @Transactional
     public  Student updateStudent(UpdateStudentRequest request, Long id){
-        Student student = studentRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Không tồn tại học sinh này"));
-        ClassRoom classRoom = classRoomRepository.findById(request.getClassRoomId()).orElseThrow(
-                () -> new RuntimeException("Khong tim thay lop nay")
-        );
+        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tồn tại học sinh này","id",id));
+
 
         if(request.getName()!= null){
             student.setName(request.getName());
         }
         if(request.getClassRoomId()!=null){
+            ClassRoom classRoom = getClassRoomOrThrow(id);
             student.setClassRoom(classRoom);
         }
 
@@ -79,14 +78,14 @@ public class StudentService {
          if(request.getSchoolYear()!=null){
              student.setSchoolYear(request.getSchoolYear());
         }
-
-
-
-
-
-
-        return studentRepository.save(student);
+         return student;
     }
 
+
+    private ClassRoom getClassRoomOrThrow(Long id){
+        return classRoomRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("khong tim thay lop nay","className",id)
+        );
+    }
 
 }

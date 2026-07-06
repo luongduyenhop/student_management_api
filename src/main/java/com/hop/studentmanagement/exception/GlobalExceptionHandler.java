@@ -6,13 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,9 +18,9 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler(StudentNotFoundException.class)
+    @ExceptionHandler(ResourceNotFoundException.class)
 
-    public ResponseEntity <ErrorResponse> handleStudentNotFound(StudentNotFoundException e, HttpServletRequest request){
+    public ResponseEntity <ErrorResponse> handleStudentNotFound(ResourceNotFoundException e, HttpServletRequest request){
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
@@ -78,6 +76,8 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+
 
 
 
