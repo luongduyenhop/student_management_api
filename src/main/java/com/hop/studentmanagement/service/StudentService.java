@@ -31,7 +31,7 @@ public class StudentService {
     public Student getStudentByID(Long id){
 
         return studentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học sinh","id",id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND, "Không tìm thấy học sinh có id: " + id));
 
     }
 
@@ -39,7 +39,7 @@ public class StudentService {
     public Student createStudent(CreateStudentRequest request)  {
 
         if(studentRepository.existsByStudentCode(request.getStudentCode())){
-            throw new DuplicateStudentCodeException("Mã sinh viên này đã tồn tại");
+            throw new BusinessException(ErrorCode.DUPLICATE_STUDENT_CODE, "Mã sinh viên " + request.getStudentCode() + " đã tồn tại");
         }
         ClassRoom classRoom = getClassRoomOrThrow(request.getClassRoomId());
 
@@ -58,7 +58,7 @@ public class StudentService {
 
     @Transactional
     public  Student updateStudent(UpdateStudentRequest request, Long id){
-        Student student = studentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tồn tại học sinh này","id",id));
+        Student student = studentRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND, "Không tồn tại học sinh này có id: " + id));
 
 
         if(request.getName()!= null){
@@ -84,7 +84,7 @@ public class StudentService {
 
     private ClassRoom getClassRoomOrThrow(Long id){
         return classRoomRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("khong tim thay lop nay","className",id)
+                () -> new BusinessException(ErrorCode.CLASS_NOT_FOUND, "Không tìm thấy lớp học có id: " + id)
         );
     }
 
