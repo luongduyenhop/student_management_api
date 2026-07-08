@@ -18,37 +18,22 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler(BusinessException.class)
 
-    public ResponseEntity <ErrorResponse> handleStudentNotFound(ResourceNotFoundException e, HttpServletRequest request){
+    public ResponseEntity <ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request){
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                e.getErrorCode().getHttpStatus().value(),
+                e.getErrorCode().getHttpStatus().getReasonPhrase(),
                 e.getMessage(),
                 request.getRequestURI()
 
         );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        
+        return new ResponseEntity<>(errorResponse, e.getErrorCode().getHttpStatus());
     }
 
-    @ExceptionHandler(DuplicateStudentCodeException.class)
-
-    public ResponseEntity<ErrorResponse> handleDuplicateStudentCode(DuplicateStudentCodeException e, HttpServletRequest request){
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                HttpStatus.CONFLICT.getReasonPhrase(),
-                e.getMessage(),
-                request.getRequestURI()
-
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
-
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
 
@@ -76,7 +61,17 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request){
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),     
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                e.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 
 
