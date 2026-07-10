@@ -4,8 +4,8 @@ import com.hop.studentmanagement.dto.request.CreateStudentRequest;
 import com.hop.studentmanagement.dto.request.UpdateStudentRequest;
 import com.hop.studentmanagement.entity.ClassRoom;
 import com.hop.studentmanagement.entity.Student;
-import com.hop.studentmanagement.exception.DuplicateStudentCodeException;
-import com.hop.studentmanagement.exception.ResourceNotFoundException;
+import com.hop.studentmanagement.exception.BusinessException;
+import com.hop.studentmanagement.exception.ErrorCode;
 import com.hop.studentmanagement.repository.ClassRoomRepository;
 import com.hop.studentmanagement.repository.StudentRepository;
 import jakarta.transaction.Transactional;
@@ -27,15 +27,18 @@ public class StudentService {
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
-
-    public Student getStudentByID(Long id){
-
-        return studentRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND, "Không tìm thấy học sinh có id: " + id));
-
+     private ClassRoom getClassRoomOrThrow(Long id){
+        return classRoomRepository.findById(id).orElseThrow(
+                () -> new BusinessException(ErrorCode.CLASSROOM_NOT_FOUND, "Không tìm thấy lớp học có id: " + id)
+        );
+    }
+    private Student getStudentOrThrow(Long id){
+        return studentRepository.findById(id).orElseThrow(
+                () -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND, "Không tìm thấy học sinh có id: " + id)
+        );
     }
 
-
+    @Transactional
     public Student createStudent(CreateStudentRequest request)  {
 
         if(studentRepository.existsByStudentCode(request.getStudentCode())){
@@ -51,21 +54,20 @@ public class StudentService {
         savedStudent.setBirthday(request.getBirthday());
         savedStudent.setSchoolYear(request.getSchoolYear());
         studentRepository.save(savedStudent);
-
         return savedStudent;
 
     }
 
     @Transactional
     public  Student updateStudent(UpdateStudentRequest request, Long id){
-        Student student = studentRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.STUDENT_NOT_FOUND, "Không tồn tại học sinh này có id: " + id));
+        Student student = getStudentOrThrow(id);
 
 
         if(request.getName()!= null){
             student.setName(request.getName());
         }
         if(request.getClassRoomId()!=null){
-            ClassRoom classRoom = getClassRoomOrThrow(id);
+            ClassRoom classRoom = getClassRoomOrThrow(reqest.getClassRoomId());
             student.setClassRoom(classRoom);
         }
 
@@ -82,10 +84,6 @@ public class StudentService {
     }
 
 
-    private ClassRoom getClassRoomOrThrow(Long id){
-        return classRoomRepository.findById(id).orElseThrow(
-                () -> new BusinessException(ErrorCode.CLASS_NOT_FOUND, "Không tìm thấy lớp học có id: " + id)
-        );
-    }
+   
 
 }

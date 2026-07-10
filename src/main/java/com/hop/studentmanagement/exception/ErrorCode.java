@@ -1,7 +1,9 @@
+import org.springframework.http.HttpStatus;
+
 public enum ErrorCode{
     STUDENT_NOT_FOUND(HttpStatus.NOT_FOUND),
 
-    CLASS_NOT_FOUND(HttpStatus.NOT_FOUND),
+    CLASSROOM_NOT_FOUND(HttpStatus.NOT_FOUND),
 
     DUPLICATE_STUDENT_CODE(HttpStatus.CONFLICT),
 
